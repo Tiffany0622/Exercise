@@ -11,7 +11,7 @@
           <p>{{ newInput }}</p>
         </div>
         <div class="cal-answer">
-          <p>{{ calAns }}</p>
+          <p>{{ newInput }}</p>
         </div>
       </div>
       <div class="cal-body">
@@ -81,18 +81,17 @@
 import HelloWorld from "./components/HelloWorld";
 
 // 點擊按鈕 fn()
-// 1.視窗顯示 用變數[]接 calInput = "字串相加" 
+// 1.視窗顯示 用變數[]接 calInput = "字串相加"
 //   1.1判斷第1個值
 //      1.1.1 是運算子 ==> 0 + "運算子"
 //
-//        
+//
 // 2.運算
 // 判斷點擊運算子
-// 111+222+444 = 
+// 111+222+444 =
 // 333 = 111+222
 // 777 = 333+444
-// preNum = preNum + newNum 
-
+// preNum = preNum + newNum
 
 export default {
   name: "App",
@@ -101,32 +100,44 @@ export default {
   },
   data() {
     return {
-      calInput:[],
-      newInput:'',
-      view:'',
+      calInput: [],
+      newInput: "",
+      view: "",
       calAns: "0",
-      preNum:'',
-      
+      preNum: "",
+      firstVal: [0, "+", "-", "×",'÷'],
+      symbolVal: ["+", "-", "×", "÷"]
     };
   },
   methods: {
     inputVal(num) {
-      // this.calInput = this.calInput === "0" ? `${num}` : `${this.calInput}${num}`;
       this.calInput.push(num);
-      if (this.calInput[0] === 0|| this.calInput[0] === "+") return this.calInput.shift();
-      this.newInput = this.calInput.join('');
-      console.log('index 0 是'+this.calInput[0]);
-      console.log(this.calInput);
-      console.log(this.newInput);
-      
-      // ||"+"||"-"||"×"||"÷" 
+      // endVal === "÷" ? this.calInput.pop():this.calInput.push(num);
+      // this.calInput.push(num);
+      this.firstVal.forEach(item => {
+        if (this.calInput[0] === item) return this.calInput.shift();
+        console.log(item);
+      });
+      this.newInput = this.calInput.join("");
+
+      const endVal = this.calInput[this.calInput.length-1];
+        console.log(endVal);
+        console.log(this.calInput);
+
+        // 有問題
+        if (endVal === "+" ) return this.calInput = this.calInput.splice(this.calInput.length-1,1,num)
+        console.log(this.calInput);
+      // this.newInput = this.calInput.join("");
+      // console.log("index 0 是" + this.calInput[0]);
+      // console.log(this.calInput);
+      // console.log(this.newInput);
       // this.calAns = this.calInput;
     },
 
     getData(e) {
-      console.log(this.$refs.dataNum.dataset.num); // 输出 100
+      // console.log(this.$refs.dataNum.dataset.num); // 输出 100
     }
-  },
+  }
 };
 </script>
 
