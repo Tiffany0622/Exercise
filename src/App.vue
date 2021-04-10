@@ -15,62 +15,19 @@
         </div>
       </div>
       <div class="cal-body">
-        <div class="btn num" v-model="calInput" @click="inputVal(7)">
-          <span>7</span>
-        </div>
-        <div class="btn num" v-model="calInput" @click="inputVal(8)">
-          <span>8</span>
-        </div>
-        <div class="btn num" v-model="calInput" @click="inputVal(9)">
-          <span>9</span>
-        </div>
-        <div class="btn symbol" v-model="calInput" @click="inputVal('÷')">
-          <!-- <div class="btn symbol" v-model="calInput" @click="inputVal('÷')"> -->
-          <span>÷</span>
-        </div>
-        <div class="btn num" v-model="calInput" @click="inputVal(4)">
-          <span>4</span>
-        </div>
-        <div class="btn num" v-model="calInput" @click="inputVal(5)">
-          <span>5</span>
-        </div>
-        <div class="btn num" v-model="calInput" @click="inputVal(6)">
-          <span>6</span>
-        </div>
-        <div
-          class="btn symbol"
-          v-model="calInput"
-          data-math="×"
-          @click="inputVal('×')"
-        >
-          <span>×</span>
-        </div>
-        <div class="btn num" v-model="calInput" @click="inputVal(1)">
-          <span>1</span>
-        </div>
-        <div class="btn num" v-model="calInput" @click="inputVal(2)">
-          <span>2</span>
-        </div>
-        <div class="btn num" v-model="calInput" @click="inputVal(3)">
-          <span>3</span>
-        </div>
-        <div class="btn symbol" v-model="calInput" @click="inputVal('+')">
-          <span>+</span>
-        </div>
-        <div class="btn num" v-model="calInput" @click="inputVal(0)">
-          <span>0</span>
-        </div>
-        <div class="btn num" v-model="calInput" @click="inputVal(0)">
-          <span>00</span>
-        </div>
-        <div class="btn num" v-model="calInput" @click="inputVal('.')">
-          <span>.</span>
-        </div>
-        <div class="btn symbol" v-model="calInput" @click="inputVal('-')">
-          <span>-</span>
-        </div>
-        <div class="btn ac"><span>AC</span></div>
-        <div class="btn del"><span>⌫</span></div>
+        <template v-for="(btn, index) in btns">
+          <div
+            class="btn"
+            :class="btn[1]"
+            v-model="calInput"
+            @click="inputVal(index, btn[0], btn[1])"
+            :key="index"
+          >
+            <span>{{ btn[0] }}</span>
+          </div>
+        </template>
+        <div class="btn ac" @click="acBtn"><span>AC</span></div>
+        <div class="btn del" @click="delBtn"><span>⌫</span></div>
         <div class="btn sum"><span>=</span></div>
       </div>
     </div>
@@ -101,39 +58,150 @@ export default {
   data() {
     return {
       calInput: [],
-      newInput: "",
+      newInput: "0",
       view: "",
       calAns: "0",
       preNum: "",
-      firstVal: [0, "+", "-", "×",'÷'],
-      symbolVal: ["+", "-", "×", "÷"]
+      symbolVal: ["+", "-", "×", "÷"],
+      btns: [
+        ["7", "num"],
+        ["8", "num"],
+        ["9", "num"],
+        ["÷", "symbol"],
+        ["4", "num"],
+        ["5", "num"],
+        ["6", "num"],
+        ["×", "symbol"],
+        ["1", "num"],
+        ["2", "num"],
+        ["3", "num"],
+        ["+", "symbol"],
+        ["0", "num"],
+        ["00", "num"],
+        [".", "dot"],
+        ["-", "symbol"]
+      ]
     };
   },
   methods: {
-    inputVal(num) {
-      this.calInput.push(num);
-      // endVal === "÷" ? this.calInput.pop():this.calInput.push(num);
-      // this.calInput.push(num);
-      this.firstVal.forEach(item => {
-        if (this.calInput[0] === item) return this.calInput.shift();
-        console.log(item);
-      });
+    inputVal(index, num, type) {
+      console.log("first", this.calInput);
+      // 判斷第一個值是symbol
+      if (!this.calInput[0] && (type === "symbol" || type === "dot")) {
+        this.calInput.push("0");
+        this.calInput.push(num);
+        this.newInput = this.calInput.join("");
+        return;
+      }
+
+      let lastIndex = this.calInput.length - 1;
+      let last = this.calInput[lastIndex];
+      //判斷進來的值是symbol
+      if (type === "symbol") {
+        let valid = false;
+
+        this.symbolVal.forEach(item => {
+          if (last === item) {
+            valid = true;
+          }
+        });
+
+        if (valid) {
+          //如果陣列最後一個值也是symbol就取代
+          this.calInput.splice(lastIndex, 1, num);
+        } else {
+          this.calInput.push(num);
+        }
+      } else if (type === "dot") {
+        //如果是 點
+        let valid = false;
+        let op = -1;
+        this.symbolVal.forEach(item => {
+          if (this.calInput.lastIndexOf(item) > op) {
+            valid = true;
+            op > this.calInput.indexOf(item)
+              ? op
+              : (op = this.calInput.indexOf(item));
+            console.log(op);
+          }
+        });
+        if (valid) {
+          //有運算子
+          if (this.calInput.indexOf(".", op) > 1) {
+            //如果有點
+            console.log(this.calInput.indexOf(".", op));
+            return;
+          } else {
+            this.calInput.push(num);
+          }
+        } else {
+          //沒有運算子
+          if (this.calInput.indexOf(".") > 1 || last === ".") {
+            return;
+          } else {
+            this.calInput.push(num);
+          }
+        }
+
+        this.calInput.indexOf("x");
+      } else if (num === "00" || num === "0") {
+        if (!this.calInput[0]) {
+          this.calInput.push("0");
+          return;
+        } else if (this.calInput[0] !== "0" || last !== "0") {
+          if (num === "00") {
+            this.calInput.push("0");
+            this.calInput.push("0");
+          } else {
+            this.calInput.push("0");
+          }
+        } else {
+          if (last === "." || this.calInput[2] === "0") {
+            if (num === "00") {
+              this.calInput.push("0");
+              this.calInput.push("0");
+            } else {
+              this.calInput.push("0");
+            }
+          } else {
+            return;
+          }
+        }
+      } else if (this.calInput[0] === "0") {
+        this.calInput.push(num);
+      } else {
+        this.calInput.push(num);
+      }
+
       this.newInput = this.calInput.join("");
+      console.log("first", this.calInput);
 
-      const endVal = this.calInput[this.calInput.length-1];
-        console.log(endVal);
-        console.log(this.calInput);
+      // console.log("點擊Btn的陣列", this.calInput);
+      // console.log("點擊Btn的值", this.newInput);
+      // console.log("index0", this.calInput[0]);
+      // console.log("index0", !this.calInput[0]);
 
-        // 有問題
-        if (endVal === "+" ) return this.calInput = this.calInput.splice(this.calInput.length-1,1,num)
-        console.log(this.calInput);
-      // this.newInput = this.calInput.join("");
-      // console.log("index 0 是" + this.calInput[0]);
-      // console.log(this.calInput);
+      // console.log("index1", this.calInput[1]);
+      // console.log("index1", !this.calInput[1]);
       // console.log(this.newInput);
-      // this.calAns = this.calInput;
     },
-
+    delBtn() {
+      if (!this.calInput[0] || !this.calInput[1]) {
+        this.acBtn();
+        console.log("安安");
+      } else {
+        this.calInput.pop();
+        this.newInput = this.calInput.join("");
+      }
+      console.log("刪除後的陣列" + this.calInput);
+      console.log("刪除後的值" + this.newInput);
+    },
+    acBtn() {
+      this.calInput = [];
+      this.newInput = "0";
+      console.log("acBtn" + this.calInput);
+      console.log("acBtn" + this.newInput);
+    },
     getData(e) {
       // console.log(this.$refs.dataNum.dataset.num); // 输出 100
     }
