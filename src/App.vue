@@ -104,7 +104,11 @@ export default {
 
       let lastIndex = this.calInput.length - 1;
       let last = this.calInput[lastIndex];
-
+      let co = this.calInput;
+      let o1 = co.indexOf("+");
+      let o2 = co.indexOf("-");
+      let o3 = co.indexOf("×");
+      let o4 = co.indexOf("÷");
       //判斷進來的值是symbol
       if (type === "symbol") {
         if (this.calInput.length >= 17 && this.numArr[0]) {
@@ -187,20 +191,15 @@ export default {
           this.pushZero(num);
         }
       } else if (
+        // this.numArr[0] && (last === "+" || last === "-" || last === "÷" || last === "×")) {
         this.numArr[0] &&
-        (last === "+" || last === "-" || last === "÷" || last === "×")
+        (o1 > -1 || o2 > -1 || o3 > -1 || o4 > -1)
       ) {
         this.calInput.push(num);
         this.newInput = this.calInput.join("");
         this.calAns = this.newInput;
         console.log("BBB");
-      } else if (
-        this.calInput === "0" ||
-        last !== "+" ||
-        last !== "-" ||
-        last !== "÷" ||
-        last !== "×"
-      ) {
+      } else if (this.calInput === "0") {
         // } else if (this.calInput[0] === "0") {
         //第一位是0 已送過等號又直接按數字
         console.log("TTTTTT");
