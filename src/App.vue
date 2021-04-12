@@ -73,18 +73,9 @@ export default {
     },
 
     getNewInput() {
-      if (!this.calInput[0]) {
+      if (!this.calInput[0] || this.numArr[0]) {
         //如果是空陣列
-        return this.newInput;
-      }
-      if (this.numArr[0] && !this.opArr[0]) {
-        //如果有按過等號 =  和  沒有運算子
-        return this.newInput;
-      }
-      if (this.numArr[0] === 0) {
-        //如果答案等於0
-        this.calInput.length = 0;
-        this.calInput.push("0");
+        //如果已送過等號 9+9=18 按點
         return this.newInput;
       }
       if (this.calInput.length <= 16) {
@@ -110,22 +101,15 @@ export default {
         this.newInput = this.calInput.join("");
         return;
       }
-      if (this.calInput.length === 17) {
-        // this.newInput = this.calInput.join("");
-        // this.calAns = this.newInput;
-        return;
-      }
 
       let lastIndex = this.calInput.length - 1;
       let last = this.calInput[lastIndex];
+
       //判斷進來的值是symbol
       if (type === "symbol") {
-        if (this.numArr[0]) {
-          //如果按過等號
-          let ans = this.calAns;
-          let ansToS = ans.toString();
-          let ansArr = ansToS.split("");
-          this.calInput = ansArr;
+        if (this.calInput.length >= 17 && this.numArr[0]) {
+          // 長度限制18 不能再輸入
+          return;
         }
         let valid = false;
         this.symbolVal.forEach(item => {
@@ -143,6 +127,7 @@ export default {
         //如果是 點
         let valid = false;
         let op = -1;
+        // 找運算子索引位置
         this.symbolVal.forEach(item => {
           if (this.calInput.lastIndexOf(item) > op) {
             valid = true;
@@ -171,8 +156,10 @@ export default {
         //判斷如果是0和00
         let valid = false;
         let op = -1;
+
         this.symbolVal.forEach(item => {
           if (this.calInput.lastIndexOf(item) > op) {
+            // 從陣列最後開始找，如果有運算子
             valid = true;
             op > this.calInput.indexOf(item)
               ? op
@@ -188,27 +175,36 @@ export default {
           return;
         } else if (valid) {
           //如果有運算子
-          if (this.calInput.indexOf(".", op) > 1 || this.calInput[op + 1] !== 0)
-            //如果運算子之後有點 或 運算子之後不是０
-            this.pushZero(num);
+          if (this.calInput[op + 1] && this.calInput.indexOf(".", op) < 0) {
+            //第一位是零,沒有點
+            return;
+          } else {
+            this.calInput.push("0");
+            this.newInput = this.calInput.join("");
+            return;
+          }
         } else if (!valid) {
-          //如果沒有運算子
-          if (this.calInput[0] !== "0") {
-            this.pushZero(num);
-          }
-          if (this.calInput[0] === "0" && this.calInput.indexOf(".") >= 0) {
-            this.pushZero(num);
-          }
-        } else {
           this.pushZero(num);
         }
-      } else if (this.calInput[0] === "0") {
-        //第一位是0
-        this.calInput.splice(0, 1, num);
-      } else if (this.numArr[0] && type !== "symbol") {
-        //如果按過等號
-        this.calInput.length = 0;
-        this.numArr.length = 0;
+      } else if (
+        this.numArr[0] &&
+        (last === "+" || last === "-" || last === "÷" || last === "×")
+      ) {
+        this.calInput.push(num);
+        this.newInput = this.calInput.join("");
+        this.calAns = this.newInput;
+        console.log("BBB");
+      } else if (
+        this.calInput === "0" ||
+        last !== "+" ||
+        last !== "-" ||
+        last !== "÷" ||
+        last !== "×"
+      ) {
+        // } else if (this.calInput[0] === "0") {
+        //第一位是0 已送過等號又直接按數字
+        console.log("TTTTTT");
+        this.acBtn();
         this.calInput.push(num);
       } else {
         this.calInput.push(num);
@@ -229,11 +225,7 @@ export default {
     delBtn() {
       if (this.numArr[0]) {
         //判斷已送出等號
-        let str = this.numArr[0];
-        let strToS = str.toString();
-        let newA = strToS.split("");
-        this.calInput = newA;
-        this.calAns = strToS;
+        this.numToArr();
         this.newInput = "";
         return;
       }
@@ -340,12 +332,19 @@ export default {
         opArr.splice(idx, 1);
       }
     },
+    numToArr() {
+      let ansNum = this.numArr[0]; //type number
+      let ansStr = ansNum.toString(); // type String
+      this.calAns = ansStr;
+      let ansArr = ansStr.split(""); //type Array
+      this.calInput = ansArr;
+    },
     calculatBtn() {
       const vm = this;
       const { calInput } = this;
       const c = calInput[calInput.length - 1];
       const n = calInput[calInput.length - 2];
-      // 如果陣列最後一個值是運算子推進去運算子前面的直
+      // 如果陣列最後一個值是運算子推進去運算子前面的值
       if (c === "+" || c === "-" || c === "÷" || c === "×") {
         calInput.push(n);
         this.newInput = calInput.join("");
@@ -382,14 +381,9 @@ export default {
 
       // 後加減
       this.toPlus();
-      // console.log("this.numArr", this.numArr);
 
-      let ans2 = this.numArr[0];
-      let ansToS = ans2.toString();
-      this.calAns = ansToS;
-
-      console.log(this.numArr[0]);
-      console.log(this.calAns);
+      // 將答案轉乘陣列推進去
+      this.numToArr();
     }
   }
 };

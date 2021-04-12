@@ -51,7 +51,7 @@ table {
 }
 
 .calculator {
-  margin: 0 auto;
+  margin: 10% auto;
   width: 350px;
   background: #062145 0% 0% no-repeat padding-box;
   box-shadow: 0px 20px 40px #00000066;
@@ -71,6 +71,7 @@ table {
 .cal-screen .cal-input {
   height: 30%;
   width: 100%;
+  word-break: break-all;
 }
 
 .cal-screen .cal-input p {
@@ -86,6 +87,7 @@ table {
   height: 70%;
   vertical-align: baseline;
   width: 100%;
+  word-break: break-all;
 }
 
 .cal-screen .cal-answer p {
