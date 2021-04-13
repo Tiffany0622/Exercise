@@ -6,7 +6,8 @@
           <p>{{ getNewInput }}</p>
         </div>
         <div class="cal-answer">
-          <p :style="ansStyle">{{ calAns }}</p>
+          <!-- <p :style="ansStyle">{{ calAns }}</p> -->
+          <p :style="ansStyle">{{ getCalAns }}</p>
         </div>
       </div>
       <div class="cal-body">
@@ -39,9 +40,7 @@ export default {
       opArr: [],
       numArr: [],
       calAns: "0",
-      preNum: "",
       symbolVal: ["+", "-", "×", "÷"],
-      sum: 0,
       btns: [
         ["7", "num"],
         ["8", "num"],
@@ -93,6 +92,10 @@ export default {
         this.calAns = this.newInput;
         return this.newInput;
       }
+    },
+    getCalAns() {
+      this.addComma(this.calAns);
+      return this.calAns;
     }
   },
   methods: {
@@ -131,8 +134,7 @@ export default {
     inputVal(index, num, type) {
       // 判斷第一個值是symbol
       if (!this.calInput[0] && (type === "symbol" || type === "dot")) {
-        this.calInput.push("0");
-        this.calInput.push(num);
+        this.calInput.push("0", num);
         this.newInput = this.calInput.join("");
         return;
       }
@@ -189,8 +191,7 @@ export default {
           if (this.numArr[0]) {
             //如果送過等號
             this.acBtn();
-            this.calInput.push("0");
-            this.calInput.push(num);
+            this.calInput.push("0", num);
           } else if (this.calInput.indexOf(".") >= 0 || last === ".") {
             return;
           } else {
@@ -316,8 +317,7 @@ export default {
         this.calInput.push(num);
       }
       if (num === "00") {
-        this.calInput.push("0");
-        this.calInput.push("0");
+        this.calInput.push("0", "0");
       }
     },
     //⌫
@@ -413,6 +413,7 @@ export default {
           idx = plus;
         } else if (plus < sub && plus < 0) {
           idx = sub;
+          
         } else if (plus > sub && sub >= 0) {
           idx = sub;
         } else if (plus > sub && sub < 0) {
@@ -473,7 +474,6 @@ export default {
 
       this.getOp();
       this.getNum();
-      // let sum = [0];
 
       // 先乘除
       this.toMulti();
@@ -483,6 +483,32 @@ export default {
 
       // 將答案轉乘陣列推進去
       this.numToArr();
+    },
+    // 加逗點
+    addComma(num) {
+      let result = "";
+      if (num.indexOf(".") != -1) {
+        //如果字串有小數點
+        //將這個字串分成小數點前的numBeforeDot和包含小數點後的numAfterDot
+        let numBeforeDot = num.slice(0, num.indexOf("."));
+        let numAfterDot = num.slice(num.indexOf("."), num.length);
+        while (numBeforeDot.length > 3) {
+          //當num.length > 3時，就一直執行下面的內容，直到num.length <= 3
+          result = "," + numBeforeDot.slice(-3) + result;
+          numBeforeDot = numBeforeDot.slice(0, numBeforeDot.length - 3);
+        }
+        result = numBeforeDot + result + numAfterDot;
+      } else {
+        //其他的是沒有小數點的字串
+        while (num.length > 3) {
+          //當num.length > 3時，就一直執行下面的內容
+          result = "," + num.slice(-3) + result;
+          num = num.slice(0, num.length - 3);
+        }
+        result = num + result;
+        this.calAns = result;
+      }
+      return this.calAns;
     }
   },
   beforeDestroy() {
