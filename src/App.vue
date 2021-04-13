@@ -6,7 +6,8 @@
           <p>{{ getNewInput }}</p>
         </div>
         <div class="cal-answer">
-          <p :style="ansStyle">{{ calAns }}</p>
+          <!-- <p :style="ansStyle">{{ calAns }}</p> -->
+          <!-- <input v-model="calAns" :style="ansStyle" /> -->
         </div>
       </div>
       <div class="cal-body">
@@ -109,6 +110,7 @@ export default {
       let o2 = co.indexOf("-");
       let o3 = co.indexOf("×");
       let o4 = co.indexOf("÷");
+      let o5 = co.indexOf(".");
       //判斷進來的值是symbol
       if (type === "symbol") {
         if (this.calInput.length >= 17 && this.numArr[0]) {
@@ -150,7 +152,13 @@ export default {
           }
         } else {
           //沒有運算子
-          if (this.calInput.indexOf(".") >= 0 || last === ".") {
+          if (this.numArr[0]) {
+            //如果送過等號
+            console.log("IIIIIIII");
+            this.acBtn();
+            this.calInput.push("0");
+            this.calInput.push(num);
+          } else if (this.calInput.indexOf(".") >= 0 || last === ".") {
             return;
           } else {
             this.calInput.push(num);
@@ -179,38 +187,110 @@ export default {
           return;
         } else if (valid) {
           //如果有運算子
-          if (this.calInput[op + 1] && this.calInput.indexOf(".", op) < 0) {
+          if (
+            this.calInput[op + 1] === "0" &&
+            this.calInput.indexOf(".", op) < 0
+          ) {
             //第一位是零,沒有點
+            console.log("WWW");
             return;
           } else {
+            console.log("KKK");
             this.calInput.push("0");
             this.newInput = this.calInput.join("");
+            this.calAns = this.newInput;
+
             return;
           }
         } else if (!valid) {
-          this.pushZero(num);
+          //如果沒有運算子
+          if (this.numArr[0]) {
+            //如果送過等號
+            this.acBtn();
+            this.calInput.push("0");
+          } else {
+            this.pushZero(num);
+          }
         }
-      } else if (
-        // this.numArr[0] && (last === "+" || last === "-" || last === "÷" || last === "×")) {
-        this.numArr[0] &&
-        (o1 > -1 || o2 > -1 || o3 > -1 || o4 > -1)
-      ) {
-        this.calInput.push(num);
-        this.newInput = this.calInput.join("");
-        this.calAns = this.newInput;
-        console.log("BBB");
-      } else if (this.calInput === "0") {
-        // } else if (this.calInput[0] === "0") {
-        //第一位是0 已送過等號又直接按數字
-        console.log("TTTTTT");
-        this.acBtn();
-        this.calInput.push(num);
       } else {
-        this.calInput.push(num);
+        if (this.numArr[0] && (o1 > -1 || o2 > -1 || o3 > -1 || o4 > -1)) {
+          if (this.calInput[this.calInput.length - 1] === "0" && num !== ".") {
+            let op = -1;
+            //找最後一個運算元索引位置
+            this.symbolVal.forEach(item => {
+              if (this.calInput.lastIndexOf(item) > op) {
+                // 從陣列最後開始找，如果有運算子
+                op > this.calInput.lastIndexOf(item)
+                  ? op
+                  : (op = this.calInput.lastIndexOf(item));
+              }
+            });
+            if (this.calInput.indexOf(".", op) === -1) {
+              // 如果沒有點就加點
+              this.calInput.push(".", num);
+            } else {
+              // 如果有點
+              this.calInput.push(num);
+            }
+          } else {
+            //如果有送過等號 且 陣列裡有運算子
+            this.calInput.push(num);
+            this.newInput = this.calInput.join("");
+            this.calAns = this.newInput;
+            console.log("BBB");
+          }
+        } else if (
+          (this.calInput[0] === "0" && o5 === -1) ||
+          this.numArr[0] === "0" ||
+          this.numArr[0]
+        ) {
+          //如果陣列第一位是0且沒有點 或 答案是0 或 送過答案
+          this.acBtn();
+          this.calInput.push(num);
+          console.log("QQQQ");
+          return;
+        } else if (this.calInput[0] === "0" && o5 > -1) {
+          //如果是0有點
+          this.calInput.push(num);
+        } else if (
+          this.calInput[this.calInput.length - 1] === "0" &&
+          num !== "."
+        ) {
+          let op = -1;
+          //找最後一個運算元索引位置
+          this.symbolVal.forEach(item => {
+            if (this.calInput.lastIndexOf(item) > op) {
+              // 從陣列最後開始找，如果有運算子
+              op > this.calInput.lastIndexOf(item)
+                ? op
+                : (op = this.calInput.lastIndexOf(item));
+            }
+          });
+          if (this.calInput.indexOf(".", op) === -1) {
+            // 如果沒有點就加點
+            this.calInput.push(".", num);
+          } else {
+            // 如果有點
+            this.calInput.push(num);
+          }
+
+          console.log("nnnnnno");
+          // this.calInput.push(num);
+          // return;
+        } else if (this.calInput[0] !== "0") {
+          //如果第一位不是0
+          console.log("PPPPPPPPPP");
+
+          this.calInput.push(num);
+        }
       }
+
+      //6+0222222
       this.newInput = this.calInput.join("");
       this.calAns = this.newInput;
+      // console.log("GGGG");
     },
+    //推0 和 00
     pushZero(num) {
       if (num === "0") {
         this.calInput.push(num);
@@ -223,7 +303,7 @@ export default {
     //⌫
     delBtn() {
       if (this.numArr[0]) {
-        //判斷已送出等號
+        //判斷已送過等號
         this.numToArr();
         this.newInput = "";
         return;
