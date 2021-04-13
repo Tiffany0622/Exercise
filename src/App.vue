@@ -6,8 +6,7 @@
           <p>{{ getNewInput }}</p>
         </div>
         <div class="cal-answer">
-          <!-- <p :style="ansStyle">{{ calAns }}</p> -->
-          <!-- <input v-model="calAns" :style="ansStyle" /> -->
+          <p :style="ansStyle">{{ calAns }}</p>
         </div>
       </div>
       <div class="cal-body">
@@ -63,6 +62,9 @@ export default {
       ]
     };
   },
+  mounted() {
+    window.addEventListener("keyup", this.handleKeyup);
+  },
   computed: {
     ansStyle() {
       if (this.calAns.length <= 8) {
@@ -94,6 +96,38 @@ export default {
     }
   },
   methods: {
+    handleKeyup(event) {
+      const e = event || window.event || arguments.callee.caller.arguments[0];
+      if (!e) return;
+      const { key, keyCode } = e;
+      console.log(keyCode);
+      console.log(key);
+      //keyCode是 ×
+      if (e.keyCode === 56 && e.shiftKey) {
+        this.inputVal(7, "×", "symbol");
+      } else if (keyCode >= 48 && keyCode <= 57) {
+        //keyCode是數字
+        this.inputVal(0, key, "num");
+      } else if (keyCode === 190) {
+        //keyCode是 點
+        this.inputVal(14, ".", "dot");
+      } else if (e.keyCode === 187 && e.shiftKey) {
+        //keyCode是 +
+        this.inputVal(11, "+", "symbol");
+      } else if (keyCode === 189) {
+        //keyCode是 -
+        this.inputVal(15, "-", "symbol");
+      } else if (keyCode === 191) {
+        //keyCode是 ÷
+        this.inputVal(3, "÷", "symbol");
+      } else if (keyCode === 13 || keyCode === 187) {
+        //keyCode是 Enter 或 =
+        this.calculatBtn();
+      } else if (keyCode === 8 || keyCode === 46) {
+        //keyCode是 backspace 或 delete
+        this.delBtn();
+      }
+    },
     inputVal(index, num, type) {
       // 判斷第一個值是symbol
       if (!this.calInput[0] && (type === "symbol" || type === "dot")) {
@@ -154,7 +188,6 @@ export default {
           //沒有運算子
           if (this.numArr[0]) {
             //如果送過等號
-            console.log("IIIIIIII");
             this.acBtn();
             this.calInput.push("0");
             this.calInput.push(num);
@@ -192,14 +225,11 @@ export default {
             this.calInput.indexOf(".", op) < 0
           ) {
             //第一位是零,沒有點
-            console.log("WWW");
             return;
           } else {
-            console.log("KKK");
             this.calInput.push("0");
             this.newInput = this.calInput.join("");
             this.calAns = this.newInput;
-
             return;
           }
         } else if (!valid) {
@@ -237,7 +267,6 @@ export default {
             this.calInput.push(num);
             this.newInput = this.calInput.join("");
             this.calAns = this.newInput;
-            console.log("BBB");
           }
         } else if (
           (this.calInput[0] === "0" && o5 === -1) ||
@@ -247,7 +276,6 @@ export default {
           //如果陣列第一位是0且沒有點 或 答案是0 或 送過答案
           this.acBtn();
           this.calInput.push(num);
-          console.log("QQQQ");
           return;
         } else if (this.calInput[0] === "0" && o5 > -1) {
           //如果是0有點
@@ -273,22 +301,14 @@ export default {
             // 如果有點
             this.calInput.push(num);
           }
-
-          console.log("nnnnnno");
-          // this.calInput.push(num);
-          // return;
+          // console.log("nnnnnno");
         } else if (this.calInput[0] !== "0") {
           //如果第一位不是0
-          console.log("PPPPPPPPPP");
-
           this.calInput.push(num);
         }
       }
-
-      //6+0222222
       this.newInput = this.calInput.join("");
       this.calAns = this.newInput;
-      // console.log("GGGG");
     },
     //推0 和 00
     pushZero(num) {
@@ -464,6 +484,9 @@ export default {
       // 將答案轉乘陣列推進去
       this.numToArr();
     }
+  },
+  beforeDestroy() {
+    window.removeEventListener("keyup", this.handleKeyup);
   }
 };
 </script>
